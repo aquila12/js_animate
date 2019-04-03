@@ -7,11 +7,11 @@
 </head>
 
 <body>
-  <img id="gear0" src="gearpoly0.png">
   <canvas id="screen"/>
-  <img visible="false" src="gearpoly1.png">
-  <img visible="false" src="gearpoly2.png">
-  <img visible="false" src="gearpoly3.png">
+  <img visible="false" id="gear0" src="gearpoly0.png">
+  <img visible="false" id="gear1" src="gearpoly1.png">
+  <img visible="false" id="gear2" src="gearpoly2.png">
+  <img visible="false" id="gear3" src="gearpoly3.png">
 
   <script type="text/javascript">
     function sprite (options) {
@@ -29,85 +29,6 @@
     var canvas = document.getElementById("screen");
     canvas.width = 1024;
     canvas.height = 800;
-    // let Application = PIXI.Application,
-    //   loader = PIXI.loader,
-    //   resources = PIXI.loader.resources,
-    //   Sprite = PIXI.Sprite;
-    //
-    // let app = new Application({
-    //   width: 1024,
-    //   height: 800
-    // });
-    //
-    // document.body.appendChild(app.view);
-    //
-    // app.renderer.backgroundColor = 0x0071b8;
-    //
-    // let gear0, gear1, gear2, gear3;
-    // let pi = 3.141592;
-    //
-    // loader
-    //   .add("gearpoly0.png")
-    //   .add("gearpoly1.png")
-    //   .add("gearpoly2.png")
-    //   .add("gearpoly3.png")
-    //   .load(setup);
-    //
-    // function setup() {
-    //   gear0 = new Sprite(
-    //     PIXI.loader.resources["gearpoly0.png"].texture
-    //   );
-    //   gear1 = new Sprite(
-    //     PIXI.loader.resources["gearpoly1.png"].texture
-    //   );
-    //   gear2 = new Sprite(
-    //     PIXI.loader.resources["gearpoly2.png"].texture
-    //   );
-    //   gear3 = new Sprite(
-    //     PIXI.loader.resources["gearpoly3.png"].texture
-    //   );
-    //
-    //   app.stage.addChild(gear0);
-    //   app.stage.addChild(gear1);
-    //   app.stage.addChild(gear2);
-    //   app.stage.addChild(gear3);
-    //
-    //   gear0.x = 75 + gear0.width / 2;
-    //   gear0.y = 75 + gear0.height / 2;
-    //   gear0.anchor.x = 0.5;
-    //   gear0.anchor.y = 0.5;
-    //   gear0.rotation = 92.053 * pi / 180.0;
-    //
-    //   gear1.x = 125 + gear1.width / 2;;
-    //   gear1.y = 234.81 + gear1.width / 2;;
-    //   gear1.anchor.x = 0.5;
-    //   gear1.anchor.y = 0.5;
-    //   gear1.rotation = 227.053 * pi / 180.0;
-    //
-    //   gear2.x = 291 + gear2.width / 2;;
-    //   gear2.y = 400.81 + gear2.width / 2;;
-    //   gear2.anchor.x = 0.5;
-    //   gear2.anchor.y = 0.5;
-    //   gear2.rotation = 285.687 * pi / 180.0;
-    //
-    //   gear3.x = 391 + gear3.width / 2;;
-    //   gear3.y = 200.81 + gear3.width / 2;;
-    //   gear3.anchor.x = 0.5;
-    //   gear3.anchor.y = 0.5;
-    //   gear3.rotation = 123.832 * pi / 180.0;
-    //
-    //   app.ticker.add(delta => gameLoop(delta));
-    // }
-    //
-    // let speedFactor = 1.5;
-    // let oneDeg = pi / 180.0;
-    //
-    // function gameLoop(delta) {
-    //   gear0.rotation += speedFactor * oneDeg;
-    //   gear1.rotation -= speedFactor * oneDeg / 2;
-    //   gear2.rotation -= speedFactor * oneDeg / 2;
-    //   gear3.rotation += speedFactor * oneDeg / 10;
-    // }
 
     function gearwheel (options) {
       var self = {};
@@ -115,69 +36,115 @@
       self.context = options.context;
       self.x = options.x;
       self.y = options.y;
-      self.width = options.width;
-      self.height = options.height;
-      self.image = options.image;
+      self.image = this.img = document.getElementById(options.image);
+      self.width = self.image.width;
+      self.height = self.image.height;
       self.cx = self.width / 2;
       self.cy = self.height / 2;
       self.angle = options.angle;
+      self.rate = options.rate;
 
       self.rotate = function(d) {
-        self.angle += d;
-      }
+        this.angle += d;
+      };
 
-      self._draw = function() {
-        this.context.drawImage(
+      self.update = function() {
+        this.rotate(this.rate);
+      };
+
+      self._draw = function(ctx) {
+        ctx.drawImage(
           this.image,
-          0, 0);
-        //   ,
-        //   this.width, this.height,
-        //   -this.cx, -this.cy,
-        //   this.width, this.height
-        // );
-      }
+          0, 0,
+          this.width, this.height,
+          -this.cx, -this.cy,
+          this.width, this.height
+        );
+      };
 
-      self.draw = function() {
-        this.context.save();
+      self.draw = function(ctx) {
+        ctx.save();
 
-        this.context.translate(this.x, this.y);
-        this.context.rotate(this.angle * Math.PI / 180.0); //FIXME
-        this.context.translate(this.cx, this.cy);
-        this._draw();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle * Math.PI / 180.0); //FIXME
+        this._draw(ctx);
 
-        this.context.restore();
-      }
+        ctx.restore();
+      };
 
       return self;
     }
 
-    // Get canvas
-    canvas = document.getElementById("screen");
-    canvas.width = 1024;
-    canvas.height = 800;
+    function scene (frame_skip) {
+      var self = {ratio: frame_skip, frame: 0, elements: []};
 
-    // Create sprite sheet
-    img = document.getElementById("gear0");
+      self.init = function() {
+        // Get canvas
+        this.canvas = document.getElementById("screen");
+        this.canvas.width = 1024;
+        this.canvas.height = 800;
 
-    // Create sprite
-    gear = gearwheel({
-      context: canvas.getContext("2d"),
-      width: img.width,
-      height: img.height,
-      image: img,
-      x: 100,
-      y: 200,
-      angle: 0.0
-    });
+        this.context = canvas.getContext("2d");
 
+        this.gear0 = gearwheel({
+          image: "gear0",
+          x: 200,
+          y: 200,
+          angle: 92.053,
+          rate: 1.0
+        });
+
+        this.gear1 = gearwheel({
+          image: "gear1",
+          x: 350,
+          y: 459.81,
+          angle: 227.053,
+          rate: -this.gear0.rate * 8.0 / 16.0
+        });
+
+        this.gear2 = gearwheel({
+          image: "gear2",
+          x: 350,
+          y: 459.81,
+          angle: 285.687,
+          rate: this.gear1.rate
+        });
+
+        this.gear3 = gearwheel({
+          image: "gear3",
+          x: 650,
+          y: 459.81,
+          angle: 123.832,
+          rate: -this.gear2.rate * 12.0 / 60.0
+        });
+
+        this.elements.push(this.gear0, this.gear1, this.gear2, this.gear3);
+      };
+
+      self.update = function() {
+        this.elements.forEach(function(e,i,a) { e.update(); });
+      };
+
+      self.draw = function() {
+        if(this.frame++ % this.ratio == 0) {
+          context = this.context
+          context.clearRect(0,0,this.canvas.width,this.canvas.height);
+          this.elements.forEach(function(e,i,a) { e.draw(context); });
+        }
+      };
+
+      return self;
+    }
+
+    scn = scene(2);
 
     function animate() {
       window.requestAnimationFrame(animate);
-
-      gear.rotate(1);
-      gear.draw();
+      scn.update();
+      scn.draw();
     }
-    animate();
+
+    window.addEventListener('load', function() { scn.init(); animate(); });
 
   </script>
 
