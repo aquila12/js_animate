@@ -152,6 +152,11 @@
 
     window.addEventListener('load', function() { scn.init(); animate(); });
 
+    document.getElementById('screen').onmousemove = function(event) {
+      scn.gear0.rate = event.clientX / 256.0;
+      scn.gear0.rate += (event.clientY - 400) / 4.0;
+    };
+
   </script>
 
 </body>
