@@ -43,12 +43,15 @@
       self.cy = self.height / 2;
       self.angle = options.angle;
       self.rate = options.rate;
+      self.drivegear = options.drivegear;
+      self.driveratio = options.driveratio;
 
       self.rotate = function(d) {
         this.angle += d;
       };
 
       self.update = function() {
+        if(this.drivegear) this.rate = this.drivegear.rate * this.driveratio;
         this.rotate(this.rate);
       };
 
@@ -99,7 +102,8 @@
           x: 350,
           y: 459.81,
           angle: 227.053,
-          rate: -this.gear0.rate * 8.0 / 16.0
+          drivegear: this.gear0,
+          driveratio: -8.0/16.0
         });
 
         this.gear2 = gearwheel({
@@ -107,7 +111,8 @@
           x: 350,
           y: 459.81,
           angle: 285.687,
-          rate: this.gear1.rate
+          drivegear: this.gear1,
+          driveratio: 1.0
         });
 
         this.gear3 = gearwheel({
@@ -115,7 +120,8 @@
           x: 650,
           y: 459.81,
           angle: 123.832,
-          rate: -this.gear2.rate * 12.0 / 60.0
+          drivegear: this.gear2,
+          driveratio: -12.0 / 60.0
         });
 
         this.elements.push(this.gear0, this.gear1, this.gear2, this.gear3);
